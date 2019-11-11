@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+			<title>gg音乐</title>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<style>
+			ul {
+				font-size: 14px;
+				color: #8f8f94;
+			}
+		
+			.mui-btn {
+				padding: 10px;
+			}
+			
+			.songsheet_item_box {
+				margin-bottom: 10px;
+				display: flex;
+				background-color: #fff;
+			}
+			
+			.songsheet_right {
+				padding: 10px;
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-start;
+			}
+			
+			.songsheet_container_text {
+				flex: 1;
+				color: #333;
+			}
+			
+			.newsong_artists {
+				color: #999;
+				font-size: 14px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="mui-content">
+			<div id="list-body" class="mui-content-padded">
+				<!-- 精选电台 -->
+				<div class='songsheet_items_allbox dj_allbox'>
+					<span class='songsheet_container_title' data-type="1">新歌榜</span>
+					<span class='songsheet_container_title' data-type="2">热歌榜</span>
+					<span class='songsheet_container_title' data-type="11">摇滚榜</span>
+					<span class='songsheet_container_title' data-type="12">爵士</span>
+					<span class='songsheet_container_title' data-type="16">流行 </span>
+					<span class='songsheet_container_title' data-type="21">欧美金曲榜</span>
+					<span class='songsheet_container_title' data-type="22">情歌对唱榜</span>
+					<span class='songsheet_container_title' data-type="23">影视金曲榜</span>
+					<span class='songsheet_container_title' data-type="24">网络歌曲榜</span>
+					<div id="newSong" class='songsheet_items_box'>
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="js/mui.min.js"></script>
+		<script src="js/app.js"></script>
+		<script src="js/template-web.js"></script>
+		<script id="tpl" type="text/html">
+			{{each list as item}}
+			  <div songid="{{item.song_id}}" class='songsheet_item_box recommend_mv'>
+			     <img src='{{item.pic_small}}' class="songsheet_container_image"></img>
+			     <div class="songsheet_right">
+						 <div class='songsheet_container_text newsong_songname'>{{item.title}}</div>
+						 <div class='newsong_artists'>{{item.author}}</div>
+					 </div>
+			  </div>
+			{{/each}}
+		</script>
+		<script>
+			(function($, doc) {
+				$.init();
+				$.plusReady(function() {
+					
+				});
+				getMusicList();
+				function getMusicList({
+					type = 1,
+					size = 10,
+					offset = 0
+				} = {}) {
+					// 获取首页数据
+					$.ajax('http://tingapi.ting.baidu.com/v1/restserver/ting', {
+						data: {
+							format: 'json',
+							calback: '',
+							from: 'webapp_music',
+							method: 'baidu.ting.billboard.billList',
+							type: type,
+							size: size,
+							offset: offset
+						},
+						crossDomain: true,
+						dataType: 'json', //服务器返回json格式数据
+						type: 'get', //HTTP请求类型
+						success: function(json) {
+							const jsonData = {
+								list: json.song_list
+							};
+							console.log(jsonData);
+							const html = template('tpl', jsonData);
+							document.getElementById("newSong").innerHTML = html;
+						}
+					});
+				}
+				$('#list-body').on('tap', '.songsheet_container_title', function() {
+					const type = this.getAttribute('data-type');
+					console.log(type);
+					getMusicList({
+						type
+					});
+				});
+				var musicDetail = $.preload({
+					"id": 'music-detail',
+					"url": 'music-detail.html'
+				});
+				$('#list-body').on('tap', '.songsheet_item_box', function() {
+					console.log(this.getAttribute('songid'));
+					$.openWindow({
+						id: "music-detail"
+					});
+				});
+			}(mui, document));
+		</script>
+	</body>
+</html>
